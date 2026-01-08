@@ -1,0 +1,44 @@
+datadog:
+  # ✅ EU site (GDPR compliant)
+  site: datadoghq.eu
+
+  # ✅ API key from Kubernetes secret
+  apiKeyExistingSecret: datadog-secret
+
+  # ✅ Enable Logs Agent
+  logs:
+    enabled: true
+    containerCollectAll: true
+
+  # ✅ SAFE log processing rules (agent-level)
+  logs_config:
+    processing_rules:
+      # ✅ Drop ONLY real INFO-level logs (NOT everything)
+      - type: exclude_at_match
+        name: drop_info_logs
+        pattern: '(?i)(^|\\s)(level=info|"level":"info"|\\[INFO\\]| INFO )'
+
+      # ✅ Drop Kubernetes health checks
+      - type: exclude_at_match
+        name: drop_health_checks
+        pattern: 'kube-probe|/health'
+
+      # ✅ Drop email addresses (PII)
+      - type: exclude_at_match
+        name: drop_emails
+        pattern: '[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}'
+
+      # ✅ Drop auth headers / secrets
+      - type: exclude_at_match
+        name: drop_auth_headers
+        pattern: '(?i)authorization|bearer|token|api[-_]?key'
+
+  # ✅ APM enabled
+  apm:
+    enabled: true
+    portEnabled: true
+
+# ✅ Cluster Agent
+clusterAgent:
+  enabled: true
+

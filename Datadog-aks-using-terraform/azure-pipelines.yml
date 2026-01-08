@@ -1,0 +1,37 @@
+trigger:
+- main
+
+pool:
+  name: self-hosted-linux
+
+variables:
+- group: datadog-aks-vars
+
+steps:
+- checkout: self
+
+# Run ALL Terraform commands inside AzureCLI task
+- task: AzureCLI@2
+  displayName: Terraform Deploy (Azure Auth)
+  inputs:
+    azureSubscription: azure-connection
+    scriptType: bash
+    scriptLocation: inlineScript
+    inlineScript: |
+      echo "Azure login context:"
+      az account show
+
+      echo "Terraform Init"
+      terraform init
+
+      echo "Terraform Plan"
+      terraform plan -input=false
+
+      echo "Terraform Apply"
+      terraform apply -input=false -auto-approve
+  env:
+    TF_VAR_aks_cluster_name: $(AKS_CLUSTER_NAME)
+    TF_VAR_aks_resource_group: $(AKS_RESOURCE_GROUP)
+    TF_VAR_env: $(ENV)
+    TF_VAR_datadog_api_key: $(DATADOG_API_KEY)
+
